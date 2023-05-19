@@ -14,9 +14,6 @@ Terminal messenger using p2p technologies
 ### Read messages
 ```bash
 python3 cosmoterm.py --r
-
-Your IP:  <you will see your IP>
-Enter a your server port (default 5000 [press enter]): <enter port numbers/ default 5000 >
 .....
 
 ```
@@ -25,6 +22,32 @@ Tell a friend your IP and port number
 ### Send messages
 ```bash
 python3 cosmoterm.py --s
+.....
+
+```
+
+
+## Example
+
+### 1. Await
+To receive a message, you need to enable the server part of the program:
+
+```bath
+Your IP:  <your IP>
+Enter a your server port (default 5000 [press enter]): <enter port / press enter (default 5000)>
+To receive a message, your friend must enter your IP into the program
+We are waiting for messages...
+<connection waiting>
+```
+
+
+### 2. Send
+
+Let's say we want to send a message to a friend, for this open the terminal and write:
+```bash 
+
+python3 cosmoterm.py --s
+
 
 
        :BG:
@@ -45,15 +68,28 @@ python3 cosmoterm.py --s
 
 
 
-Enter  a friend IP: <enter fried IP>
-Enter a friend port (default 5000 [press enter]): <enter friend port numbers/ default 5000 >
+Enter  a friend IP: <write friend IP> 
 Your friend with IP <friend IP> online!
-Enter your message: Hello!
+Enter your message: HELLO!
 Message sent successfully!
 ```
 
+### 3. Get
 
+```
+[<friend IP>] [2023-05-19 09:44:57]: HELLO!
+```
 
+       
+### 4. Add in history (automatically)
+       
+```
+#history.toml
+       
+[<friend IP>]
+"2023-05-19 09:44:57" = "HELLO!"      
+ ```
+       
 
 
 ## Found a bug?
