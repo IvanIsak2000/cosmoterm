@@ -26,6 +26,7 @@ python3 cosmoterm.py --s
 
 ```
 
+<hr>
 
 ## Example
 
