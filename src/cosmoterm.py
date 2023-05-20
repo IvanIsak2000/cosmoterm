@@ -1,8 +1,13 @@
 import socket
 import os
 import sys
+import time
 from datetime import datetime
 import toml
+import asyncio
+import threading
+
+successful_connection: bool = False
 
 
 def add_in_history(host: str, current_time: str, message: str):
@@ -17,43 +22,70 @@ def add_in_history(host: str, current_time: str, message: str):
         toml.dump(full_session_data, file)
 
 
-def get_your_host_port() -> list:
-    host = socket.gethostname()
-    your_ip = socket.gethostbyname(host)
-    print('Your IP: ', your_ip)
-    port = str(
-        input('Enter a your server port (default 5000 [press enter]): '))
+async def server_waiting():
+    global successful_connection
+    while not successful_connection:
+        for point in range(1,4):
 
-    if port == '':
-        port = 5000
-
-    else:
-        port = int(port)
-
-    return your_ip, port
+            print("Waiting" + point *'.')
+            await asyncio.sleep(0.5)
+            os.system('cls')
 
 
-def get_message(host: str, port: str):
+def server_start():
+    asyncio.run(connection_with_client(host, port))
 
-    print('To receive a message, your friend must enter your IP into the program')
-    print('We are waiting for messages...')
 
-    server_socket = socket.socket()
+
+async def  main_server(host, port):
+    
+
+    thr = threading.Thread(
+        target=server_start,
+
+    )
+    thr.start()
+    await server_waiting()
+
+
+
+
+
+async def connection_with_client(host, port):
+    server_socket = socket.socket(
+    family=socket.AF_INET, type=socket.SOCK_STREAM
+    )
     server_socket.bind((host, port))
     server_socket.listen(2)
-    conn, address = server_socket.accept()
+    server_socket.setblocking(False)
 
-    os.system(f'{clear_messege}')
-    message = conn.recv(1024).decode()
-    current_time = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+    global successful_connection
+    
+    while not successful_connection:
+        try:
 
-    print(f"[{(address[0])}] [{current_time}]: " + str(message))
-    conn.close()
+            conn, address = server_socket.accept()
+            successful_connection = True
+            message = conn.recv(1024).decode()
+            print("Connected!")
+            
+            current_time = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
 
-    add_in_history(host, current_time, message)
+            print(f"[{(address[0])}] [{current_time}]: " + str(message))
+            conn.close()
+
+            add_in_history(host, current_time, message)
+        except socket.error:
+            await asyncio.sleep(0.01)
+
+
+
 
 
 def get_server_host_port() -> list:
+
+    host = socket.gethostname()
+    your_host = socket.gethostbyname(host)
 
     logo = """
        :BG:
@@ -77,8 +109,11 @@ def get_server_host_port() -> list:
     print(logo)
 
     host = str(input('Enter  a friend IP: '))
+
     port = str(input('Enter a friend port (default 5000 [press enter]): '))
 
+    if host == 'I':
+        host = your_host
     if port == '':
         port = 5000
 
@@ -89,6 +124,8 @@ def get_server_host_port() -> list:
 
 
 def connection_to_server_part(host: str, port: str) -> str:
+
+
     try:
         client_socket = socket.socket()
         client_socket.connect((host, port))
@@ -116,19 +153,29 @@ if __name__ == '__main__':
     else:
         clear_messege = 'clear'
 
+
+
     try:
-        move = sys.argv[1]
+        move = input('Move')
+        # move = sys.argv[1]
 
-        if move == '--r':
-            your_host_port = get_your_host_port()
-            get_message(your_host_port[0], your_host_port[1])
 
-        elif move == '--s':
+        if move == '--read':
+            
+            host =  socket.gethostbyname(socket.gethostname())
+            port = int(input('Enter a your server port (default 5000 [press enter]): '))
+
+            asyncio.run(main_server(host, port))
+
+        elif move == '--send':
             server_host_port = get_server_host_port()
             connection_to_server_part(server_host_port[0], server_host_port[1])
 
         else:
-            print('Fill in correctly: main.py <command (--r or --s)>')
+            print('Fill in correctly: main.py <command (--read or --send)>')
+
+    except IndexError:
+        print('Fill in correctly: main.py <command (--read or --send)>')
 
     except Exception as err:
         print(err)
