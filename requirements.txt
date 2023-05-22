@@ -3,4 +3,4 @@ toml
 rich
 genp
 qrcode
-PIL
+Pillow
