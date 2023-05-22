@@ -1,2 +1,6 @@
 socket
 toml
+rich
+genp
+qrcode
+PIL
