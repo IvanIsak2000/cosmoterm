@@ -14,6 +14,51 @@ logging.basicConfig(filename='client.log', level=logging.DEBUG,
 logger=logging.getLogger(__name__)
 
 
+def connection_to_server_part(host: str, port: str) -> str:
+    global client_socket
+    try:
+        client_socket = socket.socket()
+        client_socket.connect((host, port))
+        console.print(f'[yellow]Your friend with IP {host} online!')
+
+        correct_response = send_and_get_response()
+
+        if correct_response:
+            console.print('[green]Connection approved')  
+            message = input("Enter your message: ")                      
+            send(message)
+
+            current_time = str(datetime.today().strftime('%Y-%m-%d %H:%M:%S'))
+            console.print('[green]Message sent successfully!')
+            logger.info(f'{host}: {message}')
+
+        else:
+            console.print('[red]Wrong token!')
+            
+
+        client_socket.close()
+        
+    except KeyboardInterrupt:
+        sys.exit()
+
+    except Exception as err:
+        print(err)
+            
+
+def send_and_get_response() -> bool:
+    client_socket.send(token.encode())
+    response = client_socket.recv(1024).decode()
+    if response == "True":
+        return True
+    else:
+        return False
+
+def send(message: str):
+    client_socket.send(message.encode())
+
+    
+
+
 if __name__ =='__main__':
 
     try:
@@ -39,47 +84,16 @@ if __name__ =='__main__':
             pass
 
 
-                
         elif action[1] == '--send':
 
 
             token = str(action[2] + action[3] + action[4])
-
-            def connection_to_server_part(host: str, port: str) -> str:
-                try:
-                    client_socket = socket.socket()
-                    client_socket.connect((host, port))
-                    console.print(f'[yellow]Your friend with IP {host} online!')
-                    client_socket.send(token.encode())
-                    responce = client_socket.recv(1024).decode()
-        
-                    if responce == 'True':
-                        console.print('[green]Connection approved')
-                        message = input("Enter your message: ")
-                        client_socket.send(message.encode())
-                        current_time = str(datetime.today().strftime('%Y-%m-%d %H:%M:%S'))
-                        console.print('[green]Message sent successfully!')
-                        logger.info(f'{host}: {message}')
-
-
-                    else:
-                        console.print('[red]Wrong token!')
-            
-                    client_socket.close()
-                    
-                except KeyboardInterrupt:
-                    sys.exit()
-
-                except Exception as err:
-                    print(err)
-            
             connection_to_server_part(str(action[2]), int(action[3]))
-
 
         else:
             print('Error when entering a command!\nAvailable commands:\npython main.py --set (configures the server.py in a startup, so that the server is restarted when the PC is turned on)\npython main.py --send <host> <port> <password>')
-            
-            for_exit=input()
+            input()
+
     except IndexError:
         print('The correct entry is:\npython main.py --set \npython main.pt --send <host> <port> <password>')
         input()
