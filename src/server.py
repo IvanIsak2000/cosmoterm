@@ -64,7 +64,7 @@ def get_messege(conn, address, session_token: str):
 
             console.print(f"[{(address[0])}] [{current_time}]: " + str(message.split()[0]))
 
-            file = os.path.exists('history.txt')
+            file = os.path.exists('history.toml')
             if not file:
                 create_history_file()
             add_in_history(host, current_time, message)  
