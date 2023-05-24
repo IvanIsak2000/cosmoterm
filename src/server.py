@@ -17,7 +17,7 @@ logging.basicConfig(filename='server.log', level=logging.DEBUG,
 logger = logging.getLogger(__name__)
 
 
-def check_token(conn: socket.socket, session_token: str) -> bool:
+def token_is_valid(conn: socket.socket, session_token: str) -> bool:
     get_client_token = conn.recv(1024).decode()
     if get_client_token == session_token:
         return True
@@ -28,18 +28,15 @@ def check_token(conn: socket.socket, session_token: str) -> bool:
 
 def add_in_history(host: str, current_time: str, message: str) -> None:
     if not os.path.isfile('history.toml'):
-        print('Файл не существовал, создан успешно.')
         create_history_file()
+        print('There was no file - successfully created.')
         
+    time_and_messege = {}
+    full_session_data = {} 
+    
     time_and_message = {current_time: message}
     full_session_data = {host: time_and_message}
-
-    time_and_messege = {}
-    full_session_data = {}
-
-    time_and_messege[current_time] = message
-    full_session_data[host] = time_and_messege
-
+    
     with open('history.toml', 'a') as file:
         toml.dump(full_session_data, file)
 
@@ -60,12 +57,11 @@ def await_connection(session_token: str):
 
         except socket.error as err:
             print(err)
-            continue
 
 def send_response(conn: socket.socket, address: tuple[str, int], session_token: str) -> None:
-    correct_token = check_token(conn, session_token)
-    if correct_token :      
-        response = 'True'
+    correct_token = token_is_valid(conn, session_token)
+    if correct_token:   
+        response = 'True'   
         conn.send(response.encode())
         console.print('[green]The token is correct, we are waiting for the message')  
         get_message(conn, address)
