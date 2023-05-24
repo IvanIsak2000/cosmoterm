@@ -38,7 +38,7 @@ def add_in_history(host: str, current_time: str, message: str) -> None:
     full_session_data = {}
 
     time_and_messege[current_time] = message
-    full_session_data[address] = time_and_messege
+    full_session_data[host] = time_and_messege
 
     with open('history.toml', 'a') as file:
         toml.dump(full_session_data, file)
@@ -63,12 +63,6 @@ def await_connection(session_token: str):
             continue
 
 def send_response(conn: socket.socket, address: tuple[str, int], session_token: str) -> None:
-    is_correct_token = check_token(conn, session_token)
-
-    if is_correct_token:
-
-def send_response(conn: str, address: str, session_token: str) -> None:
-
     correct_token = check_token(conn, session_token)
     if correct_token :      
         response = 'True'
