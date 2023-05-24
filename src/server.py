@@ -134,8 +134,3 @@ if __name__ == '__main__':
     server_socket.listen(2)
 
     await_connection(host, port, session_token)
-
-
-
-
-
