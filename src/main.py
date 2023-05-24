@@ -1,23 +1,26 @@
 import os
 import sys
-from  genp import password_generation
 import socket
 from datetime import datetime
 import logging
-                                                                              
-from  winreg import * 
+from winreg import *
 from rich.console import Console
 
+
 console = Console(highlight=False)
+
 logging.basicConfig(filename='client.log', level=logging.DEBUG, 
                     format='%(asctime)s %(levelname)s %(name)s %(message)s')
-logger=logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
-def connection_to_server_part(host: str, port: str) -> str:
+client_socket: socket.socket    # mypy ругается
+
+
+def connection_to_server_part(host: str, port: int) -> None:
     global client_socket
     try:
-        client_socket = socket.socket()
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_socket.connect((host, port))
         console.print(f'[yellow]Your friend with IP {host} online!')
 
@@ -27,25 +30,25 @@ def connection_to_server_part(host: str, port: str) -> str:
             console.print('[green]Connection approved')  
             message = input("Enter your message: ")                      
             send(message)
-
-            current_time = str(datetime.today().strftime('%Y-%m-%d %H:%M:%S'))
+            current_time = str(datetime.today().strftime('%Y-%m-%d %H:%M:%S'))  # не используется
             console.print('[green]Message sent successfully!')
             logger.info(f'{host}: {message}')
 
         else:
             console.print('[red]Wrong token!')
-            
 
         client_socket.close()
         
     except KeyboardInterrupt:
         sys.exit()
 
-    except Exception as err:
-        print(err)
+    except Exception as e:
+        print(e)
             
 
 def send_and_get_response() -> bool:
+    global client_socket
+
     client_socket.send(token.encode())
     response = client_socket.recv(1024).decode()
     if response == "True":
@@ -53,51 +56,45 @@ def send_and_get_response() -> bool:
     else:
         return False
 
-def send(message: str):
+
+def send(message: str) -> None:
+    global client_socket
+
     client_socket.send(message.encode())
 
-    
 
-
-if __name__ =='__main__':
-
+if __name__ == '__main__':
     try:
         action = sys.argv
-
-
-        if action[1] =='--set':
-            key_my = OpenKey(HKEY_CURRENT_USER, 
-                            r'SOFTWARE\Microsoft\Windows\CurrentVersion\Run', 
-                            0, KEY_ALL_ACCESS)
-
-            SetValueEx(key_my, 'server.py', 0, REG_SZ, r'C:\GITHUB\COSMOTERM_V0\cosmoterm\src\server.py')
-
+        if action[1] == '--set':
+            key_my = OpenKey(
+                HKEY_CURRENT_USER,
+                r'SOFTWARE\Microsoft\Windows\CurrentVersion\Run',
+                0, KEY_ALL_ACCESS
+            )
+            SetValueEx(key_my, 'server.py', 0, REG_SZ, f'{os.getcwd()}/cosmoterm/src/server.py')
             CloseKey(key_my)
-
-            print('Done!\nserver.py set in startup!')
+            print("""Done!
+                  server.py set in startup!""")
             for_exit = input()
 
-
-
-        elif action[1] == '--unset':
-            #удалить сервер из автозагрузок
+        elif action[1] == '--unset':  # удалить сервер из автозагрузок
             pass
 
-
         elif action[1] == '--send':
-
-
             token = str(action[2] + action[3] + action[4])
             connection_to_server_part(str(action[2]), int(action[3]))
 
         else:
-            print('Error when entering a command!\nAvailable commands:\npython main.py --set (configures the server.py in a startup, so that the server is restarted when the PC is turned on)\npython main.py --send <host> <port> <password>')
-            input()
+            input("""Error when entering a command!
+                    Available commands:
+                    python main.py --set (configures the server.py in a startup, so that the server is restarted when the PC is turned on)
+                    python main.py --send <host> <port> <password>""")
 
     except IndexError:
-        print('The correct entry is:\npython main.py --set \npython main.pt --send <host> <port> <password>')
-        input()
+        input("""The correct entry is:
+                python main.py --set 
+                python main.py --send <host> <port> <password>""")
 
     except Exception as err:
-        print(err)
-        input()
+        input(err)
