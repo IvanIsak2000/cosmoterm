@@ -25,25 +25,32 @@ def check_token(conn: socket.socket, session_token: str) -> bool:
         return False
 
 
+
 def add_in_history(host: str, current_time: str, message: str) -> None:
     if not os.path.isfile('history.toml'):
         print('Файл не существовал, создан успешно.')
         create_history_file()
+        
     time_and_message = {current_time: message}
     full_session_data = {host: time_and_message}
+
+    time_and_messege = {}
+    full_session_data = {}
+
+    time_and_messege[current_time] = message
+    full_session_data[address] = time_and_messege
 
     with open('history.toml', 'a') as file:
         toml.dump(full_session_data, file)
 
 
-def create_history_file():
+def create_history_file() -> None:
     with open('history.toml', 'w') as file:
         file.write('Created!\n')
 
 
 def await_connection(session_token: str):
     global server_socket
-
     while True:
         try:
             console.print('[#9400D3]We are waiting for the connection...[#9400D3]')
@@ -55,11 +62,15 @@ def await_connection(session_token: str):
             print(err)
             continue
 
-
 def send_response(conn: socket.socket, address: tuple[str, int], session_token: str) -> None:
     is_correct_token = check_token(conn, session_token)
 
     if is_correct_token:
+
+def send_response(conn: str, address: str, session_token: str) -> None:
+
+    correct_token = check_token(conn, session_token)
+    if correct_token :      
         response = 'True'
         conn.send(response.encode())
         console.print('[green]The token is correct, we are waiting for the message')  
@@ -73,7 +84,7 @@ def send_response(conn: socket.socket, address: tuple[str, int], session_token: 
         conn.close()
 
 
-def get_message(conn: socket.socket, address: tuple[str, int]) -> None:
+def get_message(conn: socket.socket, address: tuple[str, int]) -> None:          
     message = conn.recv(1024).decode()
     current_time = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
     console.print(f"[{(address[0])}] [{current_time}]: " + str(message.split()[0]))
@@ -125,4 +136,4 @@ if __name__ == '__main__':
     server_socket.bind((host_, port_))
     server_socket.listen(2)
 
-    await_connection(session_token_)
+    await_connection(session_token)
