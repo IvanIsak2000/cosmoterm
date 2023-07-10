@@ -31,3 +31,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed 
 - `requirements.txt`: Independent program for accepting messages
+
+
+<hr>
+
+
+[v0.0.3]
+### Changed 
+- `src/main.py`: data now get with `argparse`, now validation for sending message is validated only by `password` not full `token`
+- `src/server.py`: port can be custom with `argparse`,now  `password` is really `password`
+- 
+### Removed
+- different comments and spaces
