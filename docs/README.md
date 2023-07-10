@@ -7,29 +7,14 @@ Terminal messenger using p2p technologies
 
 
 
-
-
 ## Usage HOWTO
 
-### Read messages
+| Action       	| Description                           	| Short command                                        	| Full command                                                          	|
+|--------------	|---------------------------------------	|------------------------------------------------------	|-----------------------------------------------------------------------	|
+| Read message 	| Run server to get message on your PC 	| ```bash python3 server.py ```                        	| ```bash python3 server.py -p OR  --port <custom port, default 5000>  ``` 	|
+| Send message 	| Connect to other PC and send message  	| ```bash python3 main.py <host> <port> <password> ``` 	| ```bash python3 main.py -a OR --action <host> <port> <password> ```     	|
 
-1. Enable it yourself
 
-```bash
-python3 server.py
-```
-OR
-
-2. Install `server.py ` in startup
-
-```bash
-python3 main.py --set
-```
-
-### Send messages
-```bash
-python3 main.py --send <host> <port> <password>
-```
 
 <hr>
 
