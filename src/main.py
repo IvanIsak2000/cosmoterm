@@ -3,7 +3,6 @@ import sys
 import socket
 from datetime import datetime
 import logging
-from winreg import *
 from rich.console import Console
 
 
@@ -14,7 +13,7 @@ logging.basicConfig(filename='client.log', level=logging.DEBUG,
 logger = logging.getLogger(__name__)
 
 
-client_socket: socket.socket    # mypy ругается
+client_socket: socket.socket   
 
 
 def connection_to_server_part(host: str, port: int) -> None:
@@ -66,35 +65,23 @@ def send(message: str) -> None:
 if __name__ == '__main__':
     try:
         action = sys.argv
-        if action[1] == '--set':
-            key_my = OpenKey(
-                HKEY_CURRENT_USER,
-                r'SOFTWARE\Microsoft\Windows\CurrentVersion\Run',
-                0, KEY_ALL_ACCESS
-            )
-            SetValueEx(key_my, 'server.py', 0, REG_SZ, f'{os.getcwd()}/cosmoterm/src/server.py')
-            CloseKey(key_my)
-            print("""Done!
-                  server.py set in startup!""")
-            for_exit = input()
 
-        elif action[1] == '--unset':  # удалить сервер из автозагрузок
-            pass
-
-        elif action[1] == '--send':
+        if  action[1] == '--send':
             token = str(action[2] + action[3] + action[4])
             connection_to_server_part(str(action[2]), int(action[3]))
 
         else:
-            input("""Error when entering a command!
-                    Available commands:
-                    python main.py --set (configures the server.py in a startup, so that the server is restarted when the PC is turned on)
-                    python main.py --send <host> <port> <password>""")
+            input("""
+Error when entering a command!
+Available commands:
+python main.py --set (configures the server.py in a startup, so that the server is restarted when the PC is turned on)
+python main.py --send <host> <port> <password>""")
 
     except IndexError:
-        input("""The correct entry is:
-                python main.py --set 
-                python main.py --send <host> <port> <password>""")
+        input("""
+The correct entry is:
+python main.py --set 
+python main.py --send <host> <port> <password>""")
 
     except Exception as err:
         input(err)
