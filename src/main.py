@@ -43,7 +43,7 @@ def connection_to_server_part(host: str, port: int) -> None:
             
 
 def send_and_get_response(client_socket: socket.socket) -> bool:
-    client_socket.send(token.encode())
+    client_socket.send(password.encode())
     response = client_socket.recv(1024).decode()
     return response == 'True'
   
@@ -54,8 +54,11 @@ def send(client_socket: socket.socket, message: str) -> None:
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument('-a','--action', help='mode', default='send')
+    parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS, help="python3 main.py <host> <port> <password>")
+
+
     parser.add_argument('host', type=str, help='user host')
     parser.add_argument('port', type=int, help='user port')
     parser.add_argument('password', type=int, help='session password')
@@ -63,24 +66,6 @@ if __name__ == '__main__':
     arg = parser.parse_args()
     
     if arg.action == 'send':
-        token = arg.host + str(arg.port) + str(arg.password)
+        password = str(arg.password)
         connection_to_server_part(arg.host, arg.port)
 
-        # token = str(parser)
-        #     connection_to_server_part(str(action[2]), int(action[3]))
-
-#         else:
-#             input("""
-
-# Available commands:
-# python main.py --set (configures the server.py in a startup, so that the server is restarted when the PC is turned on)
-# python main.py --send <host> <port> <password>""")
-
-#     except IndexError:
-#         input("""
-# The correct entry is:
-# python main.py --set 
-# python main.py --send <host> <port> <password>""")
-
-#     except Exception as err:
-        # input(err)
