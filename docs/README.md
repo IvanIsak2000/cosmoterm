@@ -23,9 +23,11 @@ Terminal messenger using p2p technologies
 ### 1. Await
 To receive a message, you need to enable the server part of the program:
 
-![server main ](https://github.com/IvanIsak2000/cosmoterm/assets/79650307/03c5d54d-1097-4362-b56f-8de109120109)
+![server start image](https://github.com/IvanIsak2000/cosmoterm/assets/79650307/d25a2fb2-bd6f-41db-898e-a3d191c2e118)
 
-![qr](https://github.com/IvanIsak2000/cosmoterm/assets/79650307/97a3a61c-0e94-49c5-ab60-47da06174c40)
+
+![qr image](https://github.com/IvanIsak2000/cosmoterm/assets/79650307/0d8874c4-f52c-4430-bae4-d569d37e6c3f)
+
 
 
 
@@ -36,10 +38,9 @@ To receive a message, you need to enable the server part of the program:
 ### 2. Send
 
 Let's say we want to send a message to a friend, for this open the terminal and write:
+
 ```bash 
-
-python3 main.py --send <host> <port> <password>
-
+python3 main.py <host> <port> <password>
 ```
 
 ### 3. Connection
