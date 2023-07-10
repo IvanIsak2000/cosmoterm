@@ -3,6 +3,7 @@
 import socket
 import os
 import sys
+import argparse
 from datetime import datetime
 import logging
 from genp import password_generation
@@ -19,9 +20,11 @@ logging.basicConfig(filename='server.log', level=logging.DEBUG,
 logger = logging.getLogger(__name__)
 
 
-def token_is_valid(conn: socket.socket, session_token: str) -> bool:
-    get_client_token = conn.recv(1024).decode()
-    return get_client_token == session_token
+def password_is_valid(conn: socket.socket, password: str) -> bool:
+    print(f'server password {password}')
+    get_client_password = conn.recv(1024).decode()
+    print(get_client_password)
+    return get_client_password == password
 
 
 def add_in_history(host: str, current_time: str, message: str) -> None:
@@ -44,20 +47,27 @@ def create_history_file() -> None:
         file.write('Created!\n')
 
 
-def await_connection(session_token: str):
+def await_connection(host_: str, port_: int) -> None: 
+    server_socket = socket.socket(
+    family=socket.AF_INET,
+    type=socket.SOCK_STREAM)
+
+    server_socket.bind((host_, port_))
+    server_socket.listen(2)
+
     while True:
         try:
             console.print('\n[#9400D3]We are waiting for the connection...[#9400D3]')
             conn, address = server_socket.accept()
             console.print(f'[yellow]Connected with[yellow] {address}')
-            send_response(conn, address, session_token)
+            send_response(conn, address, password)
 
         except socket.error as err:
             print(err)
 
-def send_response(conn: socket.socket, address: tuple[str, int], session_token: str) -> None:
+def send_response(conn: socket.socket, address: tuple[str, int], password: str) -> None:
    
-    if token_is_valid(conn, session_token):   
+    if password_is_valid(conn, password):   
         response = 'True'   
         conn.send(response.encode())
         console.print('[green]The token is correct, we are waiting for the message')  
@@ -66,7 +76,7 @@ def send_response(conn: socket.socket, address: tuple[str, int], session_token: 
     else:
         response = 'False'
         conn.send(response.encode())
-        console.print("[red]The client entered an invalid session token or did not enter a token. Connection closed ")
+        console.print("[red]The client entered an invalid session password or did not enter a password. Connection closed ")
         logger.info(f'{address}: {response}') 
         conn.close()
 
@@ -85,13 +95,6 @@ def get_message(conn: socket.socket, address: tuple[str, int]) -> None:
 
 if __name__ == '__main__':
 
-    try:
-        start = input('Start server? (enter/ Ctrl + C)')
-
-    except KeyboardInterrupt:
-        print('\nThe program is stopped !')
-        sys.exit()
-        
     print("""
 
        :BG:
@@ -113,33 +116,24 @@ if __name__ == '__main__':
 
     host_ = socket.gethostbyname(socket.gethostname())
 
-    try:
-        port_ = int(input('Please write port [enter - 5000]: '))
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p','--port', type=int, help='set port for connection', default=5000)
+    arg = parser.parse_args()
 
-    except ValueError:
-        port_ = 5000
- 
+    port_ = arg.port
+
     password = password_generation(True, False, False, 15)
-    session_token_ = host_ + str(port_) + str(password)
 
-    print(f"""
-Your host: {host_}
+    console.print(f"""
+[green]Your host: {host_}
 Your port: {port_}
 Password: {password}
-Session token: {host_} {port_} {password}
------------------------------------------
-        """)
+Full session data (token): {host_} {port_} {password}
+-----------------------------------------""")
 
     qr_token = qrcode.make(f'{host_} {port_} {password}')
     qr_token.save("session_token.png")
     qr_token = Image.open('session_token.png')
     qr_token.show() 
 
-    server_socket = socket.socket(
-        family=socket.AF_INET,
-        type=socket.SOCK_STREAM
-    )
-    server_socket.bind((host_, port_))
-    server_socket.listen(2)
-
-    await_connection(session_token_)
+    await_connection(host_, port_)
