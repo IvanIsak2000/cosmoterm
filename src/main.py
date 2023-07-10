@@ -56,7 +56,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument('-a','--action', help='mode', default='send')
-    parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS, help="python3 main.py <host> <port> <password>")
+    parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS, help="standart connection: python3 main.py  <-a send or --action send or without> <host> <port> <password>")
 
 
     parser.add_argument('host', type=str, help='user host')
