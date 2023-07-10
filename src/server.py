@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import socket
 import os
 import sys
@@ -19,11 +21,7 @@ logger = logging.getLogger(__name__)
 
 def token_is_valid(conn: socket.socket, session_token: str) -> bool:
     get_client_token = conn.recv(1024).decode()
-    if get_client_token == session_token:
-        return True
-    else:
-        return False
-
+    return get_client_token == session_token
 
 
 def add_in_history(host: str, current_time: str, message: str) -> None:
@@ -47,10 +45,9 @@ def create_history_file() -> None:
 
 
 def await_connection(session_token: str):
-    global server_socket
     while True:
         try:
-            console.print('[#9400D3]We are waiting for the connection...[#9400D3]')
+            console.print('\n[#9400D3]We are waiting for the connection...[#9400D3]')
             conn, address = server_socket.accept()
             console.print(f'[yellow]Connected with[yellow] {address}')
             send_response(conn, address, session_token)
@@ -69,7 +66,7 @@ def send_response(conn: socket.socket, address: tuple[str, int], session_token: 
     else:
         response = 'False'
         conn.send(response.encode())
-        console.print('[red]The client entered the wrong session token. Connection closed')
+        console.print("[red]The client entered an invalid session token or did not enter a token. Connection closed ")
         logger.info(f'{address}: {response}') 
         conn.close()
 
@@ -115,17 +112,23 @@ if __name__ == '__main__':
     """)
 
     host_ = socket.gethostbyname(socket.gethostname())
-    port_ = 5000
+
+    try:
+        port_ = int(input('Please write port [enter - 5000]: '))
+
+    except ValueError:
+        port_ = 5000
+ 
     password = password_generation(True, False, False, 15)
     session_token_ = host_ + str(port_) + str(password)
 
     print(f"""
-    Your host: {host_}
-    Your port: {port_}
-    Password: {password}
-    Session token: {host_} {port_} {password}
-    -----------------------------------------
-            """)
+Your host: {host_}
+Your port: {port_}
+Password: {password}
+Session token: {host_} {port_} {password}
+-----------------------------------------
+        """)
 
     qr_token = qrcode.make(f'{host_} {port_} {password}')
     qr_token.save("session_token.png")
