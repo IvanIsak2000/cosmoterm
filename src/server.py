@@ -23,7 +23,6 @@ logger = logging.getLogger(__name__)
 def password_is_valid(conn: socket.socket, password: str) -> bool:
     print(f'server password {password}')
     get_client_password = conn.recv(1024).decode()
-    print(get_client_password)
     return get_client_password == password
 
 
