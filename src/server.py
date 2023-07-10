@@ -15,81 +15,91 @@ from rich.console import Console
 
 console = Console(highlight=False)
 
-logging.basicConfig(filename='server.log', level=logging.DEBUG, 
+logging.basicConfig(filename='server.log', level=logging.INFO, 
                     format='%(asctime)s %(levelname)s %(name)s %(message)s')
 logger = logging.getLogger(__name__)
 
+class Server:
 
-def password_is_valid(conn: socket.socket, password: str) -> bool:
-    print(f'server password {password}')
-    get_client_password = conn.recv(1024).decode()
-    return get_client_password == password
+    def __init__(self, host: str, port: int, password: int):
+        self.host = host
+        self.port = port 
+        self.password = password
+
+        server_socket = socket.socket(
+        family=socket.AF_INET,
+        type=socket.SOCK_STREAM)
+        server_socket.bind((host_, port_))
+        server_socket.listen()     
+        self.server_socket = server_socket
 
 
-def add_in_history(host: str, current_time: str, message: str) -> None:
-    if not os.path.isfile('history.toml'):
-        create_history_file()
-        print('There was no file - successfully created.')
+    def password_is_valid(self) -> bool:
+        get_client_password = self.conn.recv(1024).decode()
+        return get_client_password == self.password
+
+
+    def add_in_history(self) -> None:
+        if not os.path.isfile('history.toml'):
+            self.create_history_file()
+            
+        time_and_messege = {}
+        full_session_data = {} 
         
-    time_and_messege = {}
-    full_session_data = {} 
+        time_and_message = {self.current_time: self.message}
+        full_session_data = {self.host: time_and_message}
+
+        
+        with open('history.toml', 'a') as file:
+            toml.dump(full_session_data, file)
+
+
+    def create_history_file(self) -> None:
+        with open('history.toml', 'w') as file:
+            file.write('Created!\n')
+
+
+    def await_connection(self) -> None: 
+        while True:
+            try:
+                console.print('\n[#9400D3]We are waiting for the connection...[#9400D3]')
+                conn, address = self.server_socket.accept()
+                self.conn = conn
+                self.address = address
+                console.print(f'[yellow]Connected with[yellow] {self.address}')
+                self.send_response()
+
+            except socket.error as err:
+                logger.error(err)
+
+    def send_response(self) -> None:
     
-    time_and_message = {current_time: message}
-    full_session_data = {host: time_and_message}
-    
-    with open('history.toml', 'a') as file:
-        toml.dump(full_session_data, file)
+        if self.password_is_valid():   
+            response = 'True'   
+            self.conn.send(response.encode())
+            console.print('[green]The token is correct, we are waiting for the message')  
+            self.get_message()
+
+        else:
+            response = 'False'
+            self.conn.send(response.encode())
+            console.print("[red]The client entered an invalid session password or did not enter a password. Connection closed ")
+            logger.info(f'{self.address}: {response}') 
+            conn.close()
 
 
-def create_history_file() -> None:
-    with open('history.toml', 'w') as file:
-        file.write('Created!\n')
+    def get_message(self) -> None:          
+        message = self.conn.recv(1024).decode()
+        self.message = message
+        current_time = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+        self.current_time = current_time
+        console.print(f"[{(self.address)}] [{self.current_time}]: " + str(self.message.split()[0]))
+        self.add_in_history()  
+        logger.info(f'{self.address}: {message} {True}')             
 
-
-def await_connection(host_: str, port_: int) -> None: 
-    server_socket = socket.socket(
-    family=socket.AF_INET,
-    type=socket.SOCK_STREAM)
-
-    server_socket.bind((host_, port_))
-    server_socket.listen(2)
-
-    while True:
-        try:
-            console.print('\n[#9400D3]We are waiting for the connection...[#9400D3]')
-            conn, address = server_socket.accept()
-            console.print(f'[yellow]Connected with[yellow] {address}')
-            send_response(conn, address, password)
-
-        except socket.error as err:
-            print(err)
-
-def send_response(conn: socket.socket, address: tuple[str, int], password: str) -> None:
-   
-    if password_is_valid(conn, password):   
-        response = 'True'   
-        conn.send(response.encode())
-        console.print('[green]The token is correct, we are waiting for the message')  
-        get_message(conn, address)
-
-    else:
-        response = 'False'
-        conn.send(response.encode())
-        console.print("[red]The client entered an invalid session password or did not enter a password. Connection closed ")
-        logger.info(f'{address}: {response}') 
-        conn.close()
-
-
-def get_message(conn: socket.socket, address: tuple[str, int]) -> None:          
-    message = conn.recv(1024).decode()
-    current_time = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
-    console.print(f"[{(address[0])}] [{current_time}]: " + str(message.split()[0]))
-    add_in_history(address[0], current_time, message)  
-    logger.info(f'{address}: {message} {True}')             
-
-    conn.close()
-    print('_____________________________')
-    
+        self.conn.close()
+        print('_____________________________')
+        
 
 
 if __name__ == '__main__':
@@ -135,4 +145,5 @@ Full session data (token): {host_} {port_} {password}
     qr_token = Image.open('session_token.png')
     qr_token.show() 
 
-    await_connection(host_, port_)
+    server = Server(host_, port_, password)
+    server.await_connection()
