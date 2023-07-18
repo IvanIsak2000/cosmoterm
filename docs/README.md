@@ -9,10 +9,10 @@ Terminal messenger using p2p technologies
 
 ## Usage HOWTO
 
-| Action       	| Description                           	| Short command                                        	| Full command                                                          	|
-|--------------	|---------------------------------------	|------------------------------------------------------	|-----------------------------------------------------------------------	|
-| Read message 	| Run server to get message on your PC 	| ```bash python3 server.py ```                        	| ```bash python3 server.py -p OR  --port <custom port, default 5000>  ``` 	|
-| Send message 	| Connect to other PC and send message  	| ```bash python3 main.py <host> <port> <password> ``` 	| ```bash python3 main.py -a OR --action <host> <port> <password> ```     	|
+| Action       	| Description                           	| Short command                                        	| Full command                                                                            	|
+|--------------	|---------------------------------------	|------------------------------------------------------	|-----------------------------------------------------------------------------------------	|
+| Read message 	| Run server to get messages on your PC 	| ```bash python3 server.py ```                        	| ```bash python3 server.py -p/ --port <custom port, default 5000>  ```                   	|
+| Send message 	| Connect to other PC and send message  	| ```bash python3 main.py <host> <port> <password> ``` 	| ```bash python3 main.py -a/ --action <host> <port> <password> -m/ --message Hello!! ``` 	|
 
 
 
