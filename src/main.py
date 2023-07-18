@@ -15,9 +15,10 @@ logger = logging.getLogger(__name__)
 
 class Client:
 
-    def __init__(self, host: str, port: int):
+    def __init__(self, host: str, port: int, message: str = None):
         self.host = host
         self.port = port
+        self.message =  message
         
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_socket = client_socket 
@@ -31,9 +32,9 @@ class Client:
 
             if correct_response:
                 logger.info('Connected')
-                console.print('[green]Connection approved')  
-                message = input("Enter your message: ")  
-                self.message = message 
+                console.print('[green]Connection approved') 
+                if self.message == None: 
+                    self.message = input("Enter your message: ")  
                 self.send_message()
                 current_time = str(datetime.today().strftime('%Y-%m-%d %H:%M:%S'))
                 console.print('[green]Message sent successfully!')
@@ -67,16 +68,17 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument('-a','--action', help='mode', default='send')
+    parser.add_argument('-m','--message', type=str, help='write your message with start program', default=None)    
     parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS, help="standart connection: python3 main.py  <-a send or --action send or without> <host> <port> <password>")
-
 
     parser.add_argument('host', type=str, help='user host')
     parser.add_argument('port', type=int, help='user port')
     parser.add_argument('password', type=int, help='session password')
+   
 
     arg = parser.parse_args()
     
     if arg.action == 'send':
         password = str(arg.password)
-        client = Client(arg.host, arg.port)
+        client = Client(arg.host, arg.port, arg.message)
         client.start_client_part()
