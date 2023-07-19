@@ -85,7 +85,7 @@ class Server:
             self.conn.send(response.encode())
             console.print("[red]The client entered an invalid session password or did not enter a password. Connection closed ")
             logger.info(f'{self.address}: {response}') 
-            conn.close()
+            self.conn.close()
 
 
     def get_message(self) -> None:          
