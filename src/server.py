@@ -7,7 +7,7 @@ import argparse
 from datetime import datetime
 import logging
 from genp import password_generation
-from PIL import Image   
+from PIL import Image
 import qrcode
 import toml
 from rich.console import Console
@@ -15,54 +15,63 @@ from rich.console import Console
 
 console = Console(highlight=False)
 
-logging.basicConfig(filename='server.log', level=logging.INFO, 
+logging.basicConfig(filename='server.log', level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(name)s %(message)s')
 logger = logging.getLogger(__name__)
+
 
 class Server:
 
     def __init__(self, host: str, port: int, password: int):
         self.host = host
-        self.port = port 
+        self.port = port
         self.password = password
 
         server_socket = socket.socket(
-        family=socket.AF_INET,
-        type=socket.SOCK_STREAM)
-        server_socket.bind((host_, port_))
-        server_socket.listen()     
-        self.server_socket = server_socket
+            family=socket.AF_INET,
+            type=socket.SOCK_STREAM)
 
+        try:
+            server_socket.bind((host_, port_))
+
+        except OSError as err:
+            if err.errno == 98:
+                logger.exception(err)
+                console.print(
+'''[red]Oh no! This port using. 
+Please close program and start as 
+python3 server.py -p 5001 OR more ''')
+                sys.exit()
+
+        server_socket.listen()
+        self.server_socket = server_socket
 
     def password_is_valid(self) -> bool:
         get_client_password = self.conn.recv(1024).decode()
         return get_client_password == self.password
 
-
     def add_in_history(self) -> None:
         if not os.path.isfile('history.toml'):
             self.create_history_file()
-            
+
         time_and_messege = {}
-        full_session_data = {} 
-        
+        full_session_data = {}
+
         time_and_message = {self.current_time: self.message}
         full_session_data = {self.host: time_and_message}
 
-        
         with open('history.toml', 'a') as file:
             toml.dump(full_session_data, file)
-
 
     def create_history_file(self) -> None:
         with open('history.toml', 'w') as file:
             file.write('Created!\n')
 
-
-    def await_connection(self) -> None: 
+    def await_connection(self) -> None:
         while True:
             try:
-                console.print('\n[#9400D3]We are waiting for the connection...[#9400D3]')
+                console.print(
+                    '\n[#9400D3]We are waiting for the connection...[#9400D3]')
                 conn, address = self.server_socket.accept()
                 self.conn = conn
                 self.address = address
@@ -72,34 +81,43 @@ class Server:
             except socket.error as err:
                 logger.error(err)
 
+            except KeyboardInterrupt:
+                logger.info('Program was closed when awaiting connection')
+                print('Bye!')
+                sys.exit()
+
+            except Exception as e:
+                logger.exception(e)
+
     def send_response(self) -> None:
-    
-        if self.password_is_valid():   
-            response = 'True'   
+
+        if self.password_is_valid():
+            response = 'True'
             self.conn.send(response.encode())
-            console.print('[green]The token is correct, we are waiting for the message')  
+            console.print(
+                '[green]The token is correct, we are waiting for the message')
             self.get_message()
 
         else:
             response = 'False'
             self.conn.send(response.encode())
-            console.print("[red]The client entered an invalid session password or did not enter a password. Connection closed ")
-            logger.info(f'{self.address}: {response}') 
+            console.print(
+                "[red]The client entered an invalid session password or did not enter a password. Connection closed ")
+            logger.info(f'{self.address}: {response}')
             self.conn.close()
 
-
-    def get_message(self) -> None:          
+    def get_message(self) -> None:
         message = self.conn.recv(1024).decode()
         self.message = message
         current_time = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
         self.current_time = current_time
-        console.print(f"[{(self.address)}] [{self.current_time}]: " + str(self.message.split()[0]))
-        self.add_in_history()  
-        logger.info(f'{self.address}: {message} {True}')             
+        console.print(
+            f"[{(self.address)}] [{self.current_time}]: " + str(self.message.split()[0]))
+        self.add_in_history()
+        logger.info(f'{self.address}: {message} {True}')
 
         self.conn.close()
         print('_____________________________')
-        
 
 
 if __name__ == '__main__':
@@ -120,13 +138,18 @@ if __name__ == '__main__':
   .   ^JJJ?.             :?YJJJYJ^         ^?YJJJY?^        .7JJJJJJ?:      J~        ?!        7?        !JYJJYJ7.         .?YYY.      ~JYJJJYJ~       !J         ~J        ^Y        :5
       .Y .5
       ~P .B.
-       ~YY.    
+       ~YY.
     """)
 
     host_ = socket.gethostbyname(socket.gethostname())
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p','--port', type=int, help='set port for connection', default=5000)
+    parser.add_argument(
+        '-p',
+        '--port',
+        type=int,
+        help='set port for connection',
+        default=5000)
     arg = parser.parse_args()
 
     port_ = arg.port
@@ -143,7 +166,7 @@ Full session data (token): {host_} {port_} {password}
     qr_token = qrcode.make(f'{host_} {port_} {password}')
     qr_token.save("session_token.png")
     qr_token = Image.open('session_token.png')
-    qr_token.show() 
+    qr_token.show()
 
     server = Server(host_, port_, password)
     server.await_connection()
