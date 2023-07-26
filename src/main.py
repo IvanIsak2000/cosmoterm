@@ -6,66 +6,79 @@ from datetime import datetime
 import logging
 from rich.console import Console
 
-
 console = Console(highlight=False)
 
-logging.basicConfig(filename='client.log', level=logging.DEBUG, 
+logging.basicConfig(filename='client.log', level=logging.INFO, 
                     format='%(asctime)s %(levelname)s %(name)s %(message)s')
 logger = logging.getLogger(__name__)
 
 
-def connection_to_server_part(host: str, port: int) -> None:
-    try:
-        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect((host, port))
-        console.print(f'[yellow]Your friend with IP {host} online!')
+class Client:
 
-        correct_response = send_and_get_response(client_socket)
-
-        if correct_response:
-            console.print('[green]Connection approved')  
-            message = input("Enter your message: ")                      
-            send(client_socket, message)
-            current_time = str(datetime.today().strftime('%Y-%m-%d %H:%M:%S'))
-            console.print('[green]Message sent successfully!')
-            logger.info(f'{host}: {message}')
-
-        else:
-            console.print('[red]Wrong token!')
-
-        client_socket.close()
+    def __init__(self, host: str, port: int, message: str = None):
+        self.host = host
+        self.port = port
+        self.message =  message
         
-    except KeyboardInterrupt:
-        sys.exit()
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client_socket = client_socket 
+        
 
-    except Exception as e:
-        print(e)
+    def start_client_part(self) -> None:
+        self.client_socket.connect((self.host, self.port))  
+        try:
+            console.print(f'[yellow]Your friend with IP {self.host} online!')
+            correct_response = self.send_and_get_response()
+
+            if correct_response:
+                logger.info('Connected')
+                console.print('[green]Connection approved') 
+                if self.message == None: 
+                    self.message = input("Enter your message: ")  
+                self.send_message()
+                current_time = str(datetime.today().strftime('%Y-%m-%d %H:%M:%S'))
+                console.print('[green]Message sent successfully!')
+                logger.info(f'{self.host}: {self.message}')
+
+            else:
+                logger.error('Wrong token')
+                console.print('[red]Wrong token!')
+
+            self.client_socket.close()
             
+        except KeyboardInterrupt:
+            logger.info('User closed program')
+            sys.exit()
 
-def send_and_get_response(client_socket: socket.socket) -> bool:
-    client_socket.send(password.encode())
-    response = client_socket.recv(1024).decode()
-    return response == 'True'
-  
+        except Exception as e:
+           logger.exception(e)
+                
 
-def send(client_socket: socket.socket, message: str) -> None:
-    client_socket.send(message.encode())
+    def send_and_get_response(self) -> bool:
+        self.client_socket.send(password.encode())
+        response = self.client_socket.recv(1024).decode()
+        return response == 'True'
+    
+
+    def send_message(self) -> None:
+        self.client_socket.send(self.message.encode())
 
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument('-a','--action', help='mode', default='send')
+    parser.add_argument('-m','--message', type=str, help='write your message with start program', default=None)    
     parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS, help="standart connection: python3 main.py  <-a send or --action send or without> <host> <port> <password>")
-
 
     parser.add_argument('host', type=str, help='user host')
     parser.add_argument('port', type=int, help='user port')
     parser.add_argument('password', type=int, help='session password')
+   
 
     arg = parser.parse_args()
     
     if arg.action == 'send':
         password = str(arg.password)
-        connection_to_server_part(arg.host, arg.port)
-
+        client = Client(arg.host, arg.port, arg.message)
+        client.start_client_part()
