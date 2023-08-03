@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "cosmoterm"
+version = "0.1.0"
+description = ""
+authors = ["IvanIsak2000 <vingving648@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+colorama = "0.4.6"
+genp = "^0.2"
+rich = "^13.5.2"
+pillow = "^10.0.0"
+qrcode = "^7.4.2"
+toml = "^0.10.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
