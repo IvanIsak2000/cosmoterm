@@ -2,6 +2,7 @@
 
 # Basic
 [![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&pause=1000&repeat=false&width=500&height=30&lines=Terminal+messenger+using+p2p+technologies.)](https://git.io/typing-svg)
+
 [![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&size=15&pause=1000&repeat=false&width=435&height=25&lines=The+project+supports+Python+3.7%2B.)](https://git.io/typing-svg)
 
 [![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&size=15&pause=1000&repeat=false&width=500&lines=Python+important+libs%3A++socket%2C+qrcode%2C+rich%2C+toml)](https://git.io/typing-svg)
