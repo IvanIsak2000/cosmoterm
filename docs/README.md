@@ -1,13 +1,39 @@
-# cosmoterm
-
-Terminal messenger using p2p technologies
-(project is currently *in development*)
-
 ![logo](https://github.com/IvanIsak2000/cosmoterm/assets/79650307/44c94073-9c72-4edc-93a1-9e6308b72da0)
 
+# Basic
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&pause=1000&repeat=false&width=500&height=25&lines=Terminal+messenger+using+p2p+technologies.)](https://git.io/typing-svg)
+
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&size=15&pause=1000&repeat=false&width=435&height=25&lines=The+project+supports+Python+3.7%2B.)](https://git.io/typing-svg)
+
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&size=15&pause=1000&repeat=false&width=500&lines=Python+important+libs%3A++socket%2C+qrcode%2C+rich%2C+toml)](https://git.io/typing-svg)
 
 
-## Usage HOWTO
+
+
+# Start
+
+1. Clone repo:
+```bash
+git clone https://github.com/IvanIsak2000/cosmoterm.git
+```
+
+2. Change folder:
+```bash
+cd src
+```
+
+3. Activate <a href='https://python-poetry.org/'>poetry</a> :
+```bash
+poetry shell
+```
+
+4. Install dependencies:
+```bash
+poetry install 
+```
+
+
+# Commands
 
 | Action       	| Description                           	| Short command                                        	| Full command                                                                            	|
 |--------------	|---------------------------------------	|------------------------------------------------------	|-----------------------------------------------------------------------------------------	|
@@ -16,26 +42,18 @@ Terminal messenger using p2p technologies
 
 
 
-<hr>
+# Example
 
-## Example
-
-### 1. Await
+## 1. Await
 To receive a message, you need to enable the server part of the program:
 
 ![server start image](https://github.com/IvanIsak2000/cosmoterm/assets/79650307/d25a2fb2-bd6f-41db-898e-a3d191c2e118)
 
-
 ![qr image](https://github.com/IvanIsak2000/cosmoterm/assets/79650307/0d8874c4-f52c-4430-bae4-d569d37e6c3f)
-
-
-
 
 >The QR code is created from your "host", "port" and the "password" automatically created for the current session, and then all this is recorded in the QR code
 
-
-
-### 2. Send
+## 2. Send
 
 Let's say we want to send a message to a friend, for this open the terminal and write:
 
@@ -43,7 +61,7 @@ Let's say we want to send a message to a friend, for this open the terminal and 
 python3 main.py <host> <port> <password>
 ```
 
-### 3. Connection
+## 3. Connection
 
 The server is waiting for the connection
 
@@ -57,7 +75,7 @@ The server is waiting for the connection
 
 
 
-### 4. Check token and get messege
+## 4. Check token and get messege
 
 >`server.py`
 >
@@ -69,7 +87,7 @@ The server is waiting for the connection
 >![main](https://github.com/IvanIsak2000/cosmoterm/assets/79650307/5b03a0ed-2803-4316-9754-157c20efca86)
 
 
-### 5. Add in `history.toml`,`client.log` and `server.log`(automatically)
+## 5. Add in `history.toml`,`client.log` and `server.log`(automatically)
        
 ```
 #history.toml
@@ -92,11 +110,11 @@ The server is waiting for the connection
        
 
 
-## Found a bug?
+# Found a bug?
 
 It's possible to submit a bug report or a feature request via GitHub [issues](https://github.com/IvanIsak2000/cosmoterm/issues/new)
 
-## Contribution
+# Contribution
 
 Checkout [contributing guidelines](docs/CONTRIBUTING.md)
 
