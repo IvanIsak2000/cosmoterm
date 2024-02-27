@@ -3,82 +3,62 @@ import sys
 import argparse
 import socket
 from datetime import datetime
-import logging
 from rich.console import Console
+import asyncio
 
-console = Console(highlight=False)
+import apscheduler
+import argparse
+from PIL import Image
+import qrcode
+import toml
+from rich.console import Console
+import socket
+import threading
+import time
+import qrcode
+import secrets
+from apscheduler.schedulers.background import BackgroundScheduler
 
-logging.basicConfig(filename='client.log', level=logging.INFO, 
-                    format='%(asctime)s %(levelname)s %(name)s %(message)s')
-logger = logging.getLogger(__name__)
+from utils.logger import logger
+from server import Server
+from client import Client
 
 
-class Client:
+def get_currently_token_to_conenct(host, port, key):
+    """Типо получить текущий qr код с данными для подкчлюения"""
+    qr_token = qrcode.make(f'{host} {port} {key}')
+    qr_token.save("session_token.png")
+    qr_token = Image.open('session_token.png')
+    qr_token.show()
 
-    def __init__(self, host: str, port: int, message: str = None):
-        self.host = host
-        self.port = port
-        self.message =  message
-        
-        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client_socket = client_socket 
-        
 
-    def start_client_part(self) -> None:
-        self.client_socket.connect((self.host, self.port))  
-        try:
-            console.print(f'[yellow]Your friend with IP {self.host} online!')
-            correct_response = self.send_and_get_response()
+def generate_session_key() -> str:
+    return secrets.token_urlsafe(69)
 
-            if correct_response:
-                logger.info('Connected')
-                console.print('[green]Connection approved') 
-                if self.message == None: 
-                    self.message = input("Enter your message: ")  
-                self.send_message()
-                current_time = str(datetime.today().strftime('%Y-%m-%d %H:%M:%S'))
-                console.print('[green]Message sent successfully!')
-                logger.info(f'{self.host}: {self.message}')
 
-            else:
-                logger.error('Wrong token')
-                console.print('[red]Wrong token!')
+def client_part_task():
+    client_part = Client()
+    scheduler.add_job(client_part.listen_messages, 'interval', seconds=1)
+    scheduler.start()
 
-            self.client_socket.close()
-            
-        except KeyboardInterrupt:
-            logger.info('User closed program')
-            sys.exit()
 
-        except Exception as e:
-           logger.exception(e)
-                
 
-    def send_and_get_response(self) -> bool:
-        self.client_socket.send(password.encode())
-        response = self.client_socket.recv(1024).decode()
-        return response == 'True'
-    
+def server_part_task(host, port, key):
+    """Таска от сервера"""
+    server_part = Server()
+    scheduler.add_job(server_task.await_connection, 'interval', seconds=1)
+    scheduler.start()
 
-    def send_message(self) -> None:
-        self.client_socket.send(self.message.encode())
 
 
 if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('-a','--action', help='mode', default='send')
-    parser.add_argument('-m','--message', type=str, help='write your message with start program', default=None)    
-    parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS, help="standart connection: python3 main.py  <-a send or --action send or without> <host> <port> <password>")
-
-    parser.add_argument('host', type=str, help='user host')
-    parser.add_argument('port', type=int, help='user port')
-    parser.add_argument('password', type=int, help='session password')
-   
-
-    arg = parser.parse_args()
     
-    if arg.action == 'send':
-        password = str(arg.password)
-        client = Client(arg.host, arg.port, arg.message)
-        client.start_client_part()
+    logger.info('Program was start')
+    loop = asyncio.get_event_loop()
+    tasks = [
+        loop.create_task(server_part_task),
+        loop.create_task(client_part_task)
+    ]
+    loop.run_until_complete(asyncio.gather(*tasks))
+
+  
