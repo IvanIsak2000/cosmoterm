@@ -13,6 +13,8 @@ from rich.console import Console
 import secrets
 import psutil
 
+import threading
+
 from utils.logger import logger
 
 
@@ -20,6 +22,7 @@ class Server:
     """Класс будет ожидать сообщения от других пользователй"""
 
     def __init__(self):
+        threading.Thread.__init__(self)
         console = Console(highlight=False)
         self.console= console
         server_socket = socket.socket(
@@ -30,9 +33,10 @@ class Server:
         host, port = 'localhost', 8000
         self.host = host
         self.port = port 
+        print('start')
 
-
-    def start_messaging(self) -> None:
+    def start(self) -> None:
+        
         try:
             self.server_socket.bind((self.host, self.port))
             self.server_socket.listen()
@@ -43,9 +47,6 @@ class Server:
                 self.kill_port()
                 pass
 
-        except Exception as e:
-            logger.error(e)
-            raise e
 
 
         while True:
@@ -113,8 +114,3 @@ class Server:
         except TypeError:
             raise 'Sorry, but program cannot use it port. Kill an app that using port. Maybe it can be ncat'
 
-
-
-
-s = Server()
-s.start_messaging()

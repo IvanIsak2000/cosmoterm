@@ -4,6 +4,7 @@ import argparse
 import socket
 from datetime import datetime
 from rich.console import Console
+import threading
 
 from utils.logger import logger
 from utils.model import add_target
@@ -15,6 +16,7 @@ class Client:
     """
 
     def __init__(self):
+        threading.Thread.__init__(self)
         console = Console(highlight=False)
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_socket = client_socket 
@@ -40,7 +42,7 @@ class Client:
         return {'host':target.host, 'port': target.port}
     
 
-    def start_client_part(self, target) -> None:
+    def start(self) -> None:
         """Get socket to send.
         Sending: Step 1"""
 
@@ -49,8 +51,8 @@ class Client:
             self.add_new_target()  
 
         chosen_target = self.choose_target()
+        print(chosen_target)
         self.send_message(chosen_target)
-        host = target.host
         self.client_socket.connect((host, port))  
         try:
             self.console.print(f'[yellow]Your friend with IP {self.host} online!')
@@ -93,6 +95,3 @@ class Client:
         """Sending: Step 3"""
         self.client_socket.send(self.message.encode())
 
-# для дебажнинга 
-# c = Client()
-# c.main()
