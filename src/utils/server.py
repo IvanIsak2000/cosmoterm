@@ -11,7 +11,7 @@ import qrcode
 import toml
 from rich.console import Console
 import secrets
-
+import psutil
 
 from utils.logger import logger
 
@@ -21,72 +21,50 @@ class Server:
 
     def __init__(self):
         console = Console(highlight=False)
+        self.console= console
         server_socket = socket.socket(
             family=socket.AF_INET,
             type=socket.SOCK_STREAM)
+        
+        self.server_socket = server_socket
+        host, port = 'localhost', 8000
+        self.host = host
+        self.port = port 
 
+
+    def start_messaging(self) -> None:
         try:
-            host, port = server_socket.getpeername()
-            server_socket.bind((host, port))
+            self.server_socket.bind((self.host, self.port))
+            self.server_socket.listen()
+            self.console.print('[green]You are ready to get message!')
 
         except OSError as err:
             if err.errno == 98:
-                logger.exception(err)
-                console.print(
-'''[red]Oh no! This port using. 
-Please close program and start as 
-python3 server.py -p 5001 OR more ''')
-                sys.exit()
+                self.kill_port()
+                pass
 
-        server_socket.listen()
-        self.server_socket = server_socket
+        except Exception as e:
+            logger.error(e)
+            raise e
 
-    def key_is_valid(self) -> bool:
-        """Get sender's key and check valid or not"""
-        get_client_key = self.conn.recv(1024).decode()
-        return get_client_key == self.key
 
-    # def add_in_history(self) -> None:
-    #     if not os.path.isfile('history.toml'):
-    #         self.create_history_file()
-
-    #     time_and_messege = {}
-    #     full_session_data = {}
-
-    #     time_and_message = {self.current_time: self.message}
-    #     full_session_data = {self.host: time_and_message}
-
-    #     with open('history.toml', 'a') as file:
-    #         toml.dump(full_session_data, file)
-    def add_new_block():
-        """Add new message's information block in blockchain"""
-        ...
-
-    # def create_history_file(self) -> None:
-    #     with open('history.toml', 'w') as file:
-    #         file.write('Created!\n')
-
-    def await_connection(self) -> None:
         while True:
             try:
-                self.console.print(
-                    '\n[#9400D3]We are waiting for the connection...[#9400D3]')
+
                 conn, address = self.server_socket.accept()
                 self.conn = conn
                 self.address = address
-                self.console.print(f'[yellow]Connected with[yellow] {self.address}')
+                # self.console.print(f'[yellow]Connected with[yellow] {address}')
                 self.send_response()
-
-            except socket.error as err:
-                logger.error(err)
 
             except KeyboardInterrupt:
                 logger.info('Program was closed when awaiting connection')
                 print('Bye!')
                 sys.exit()
 
-            except Exception as e:
-                logger.exception(e)
+            # except Exception as e:
+            #     logger.exception(e)
+            #     sys.exit()
 
     def send_response(self) -> None:
 
@@ -117,3 +95,26 @@ python3 server.py -p 5001 OR more ''')
 
         self.conn.close()
         print('_____________________________')
+
+    def key_is_valid(self) -> bool:
+        """Get sender's key and check valid or not"""
+        get_client_key = self.conn.recv(1024).decode()
+        return get_client_key == self.key
+    
+    def kill_port(self):
+        try:
+            for proc in psutil.process_iter(['pid', 'name', 'connections']):
+                for conn in proc.info['connections']:
+                    if conn.laddr.port == self.port:
+                        pid = proc.info['pid']
+                        process = psutil.Process(pid)
+                        process.terminate()
+                        print('port was killed')
+        except TypeError:
+            raise 'Sorry, but program cannot use it port. Kill an app that using port. Maybe it can be ncat'
+
+
+
+
+s = Server()
+s.start_messaging()

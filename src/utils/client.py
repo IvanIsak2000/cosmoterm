@@ -31,18 +31,25 @@ class Client:
         add_target(new_target_name, new_target_host, new_target_port)
 
 
-    def choose_target(self) :
+    def choose_target(self) -> dict:
         """Get local saved targets and get user answer to choose target"""
         targets = get_targets()
         print('\n'.join([str(t) for t in targets]))
         target_id = int(input('Please target for sending by id:\n'))
-        target = targets
-        print(target[target_id])
+        target = targets[target_id]
+        return {'host':target.host, 'port': target.port}
     
 
     def start_client_part(self, target) -> None:
         """Get socket to send.
         Sending: Step 1"""
+
+        targets = get_targets()
+        if targets is None:
+            self.add_new_target()  
+
+        chosen_target = self.choose_target()
+        self.send_message(chosen_target)
         host = target.host
         self.client_socket.connect((host, port))  
         try:
@@ -85,15 +92,6 @@ class Client:
     def send_message(self) -> None:
         """Sending: Step 3"""
         self.client_socket.send(self.message.encode())
-
-    def main(self):
-        """Class's main function"""
-        targets = get_targets()
-        if targets is None:
-            self.add_new_target()  
-
-        chosen_target = self.choose_target()
-        self.send_message(chosen_target)
 
 # для дебажнинга 
 # c = Client()
