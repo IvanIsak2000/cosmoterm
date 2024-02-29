@@ -1,17 +1,8 @@
 #!/usr/bin/python3
 
 import socket
-import os
-import sys
-import argparse
 from datetime import datetime
-import logging
-from PIL import Image
-import qrcode
-import toml
 from rich.console import Console
-import secrets
-import psutil
 
 import threading
 
@@ -33,14 +24,13 @@ class Server:
         host, port = 'localhost', 8000
         self.host = host
         self.port = port 
-        print('start')
 
     def start(self) -> None:
         
         try:
             self.server_socket.bind((self.host, self.port))
             self.server_socket.listen()
-            self.console.print('[green]You are ready to get message!')
+            self.console.print('[green]Get message is available')
 
         except OSError as err:
             if err.errno == 98:
@@ -55,17 +45,13 @@ class Server:
                 conn, address = self.server_socket.accept()
                 self.conn = conn
                 self.address = address
-                # self.console.print(f'[yellow]Connected with[yellow] {address}')
+                self.console.print(f'[yellow]Connected with[yellow] {address}')
                 self.send_response()
 
             except KeyboardInterrupt:
                 logger.info('Program was closed when awaiting connection')
                 print('Bye!')
                 sys.exit()
-
-            # except Exception as e:
-            #     logger.exception(e)
-            #     sys.exit()
 
     def send_response(self) -> None:
 
@@ -93,9 +79,9 @@ class Server:
             f"[{(self.address)}] [{self.current_time}]: " + str(self.message.split()[0]))
         self.add_in_history()
         logger.info(f'{self.address}: {message} {True}')
-
         self.conn.close()
         print('_____________________________')
+
 
     def key_is_valid(self) -> bool:
         """Get sender's key and check valid or not"""

@@ -17,7 +17,10 @@ class Client:
 
     def __init__(self):
         threading.Thread.__init__(self)
+
         console = Console(highlight=False)
+        self.console = console
+
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_socket = client_socket 
  
@@ -36,7 +39,8 @@ class Client:
     def choose_target(self) -> dict:
         """Get local saved targets and get user answer to choose target"""
         targets = get_targets()
-        print('\n'.join([str(t) for t in targets]))
+
+        print('Targets:','\n'.join([str(t) for t in targets]))
         target_id = int(input('Please target for sending by id:\n'))
         target = targets[target_id]
         return {'host':target.host, 'port': target.port}
@@ -46,14 +50,18 @@ class Client:
         """Get socket to send.
         Sending: Step 1"""
 
+        self.console.print('[#20EC19]Send message is available!')
         targets = get_targets()
         if targets is None:
             self.add_new_target()  
 
         chosen_target = self.choose_target()
-        print(chosen_target)
-        self.send_message(chosen_target)
-        self.client_socket.connect((host, port))  
+        self.host = chosen_target['host']
+        self.port = chosen_target['port']
+
+        
+        self.send_message()
+        self.client_socket.connect(self.host, self.port)
         try:
             self.console.print(f'[yellow]Your friend with IP {self.host} online!')
             correct_response = self.send_key_to_check_permission_to_sending()
