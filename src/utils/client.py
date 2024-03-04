@@ -5,6 +5,7 @@ import socket
 from datetime import datetime
 from rich.console import Console
 import threading
+import curses
 
 from utils.logger import logger
 from utils.model import add_target
@@ -23,18 +24,17 @@ class Client:
 
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_socket = client_socket 
- 
 
     def add_new_target(self):
         """Выводиться когда список целей пуст и предлагает добавить новую цель посредством ввода имена цели, хоста, порта."""
         """Activate where no one targets for sennging is not exist in local databae"""
 
         self.console.print('[red]Sorry, but no one targets not exist! Please make new targer')
-        new_target_name = input('Write custom target name (likely: Jonn):')
+        print(2, text='Write custom target name (likely: Jonn):', color_id=2)
+        new_target_name = input('Write target host (likely:xxx.xxx.xx.xx):')
         new_target_host = input('Write target host (likely:xxx.xxx.xx.xx):')
         new_target_port = input('Write target port (likely: xxxx):')
         add_target(new_target_name, new_target_host, new_target_port)
-
 
     def choose_target(self) -> dict:
         """Get local saved targets and get user answer to choose target"""
@@ -44,7 +44,6 @@ class Client:
         target_id = int(input('Please target for sending by id:\n'))
         target = targets[target_id]
         return {'host':target.host, 'port': target.port}
-    
 
     def start(self) -> None:
         """Get socket to send.
@@ -59,7 +58,6 @@ class Client:
         self.host = chosen_target['host']
         self.port = chosen_target['port']
 
-        
         self.send_message()
         self.client_socket.connect(self.host, self.port)
         try:
@@ -69,11 +67,12 @@ class Client:
             if correct_response:
                 logger.info('Connected')
                 self.console.print('[green]Connection approved') 
-                if self.message == None: 
+                if self.message is None: 
                     self.message = input("Enter your message: ")  
                 self.send_message()
                 current_time = str(datetime.today().strftime('%Y-%m-%d %H:%M:%S'))
                 self.console.print('[green]Message sent successfully!')
+                # write in db or/ and create a block in blockchain
                 logger.info(f'Connected: {self.host}: {self.message}')
 
             else:
@@ -81,14 +80,11 @@ class Client:
                 logger.error('Wrong token')
 
             self.client_socket.close()
-            
         except KeyboardInterrupt:
             logger.info('User closed program')
             sys.exit()
-
         except Exception as e:
-           logger.exception(e)
-                
+            logger.exception(e)     
 
     def send_key_to_check_permission_to_sending(self) -> bool:
         """Get a key, send permisson key to server and return that server response is True to start sending
@@ -98,7 +94,6 @@ class Client:
         response = self.client_socket.recv(1024).decode()
         return response == 'True'
     
-
     def send_message(self) -> None:
         """Sending: Step 3"""
         self.client_socket.send(self.message.encode())
