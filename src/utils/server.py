@@ -9,9 +9,9 @@ import logging
 from PIL import Image
 import qrcode
 import toml
-from rich.console import Console
 import secrets
 import psutil
+import requests as r 
 
 import threading
 
@@ -23,39 +23,37 @@ class Server:
 
     def __init__(self):
         threading.Thread.__init__(self)
-        console = Console(highlight=False)
-        self.console= console
         server_socket = socket.socket(
             family=socket.AF_INET,
             type=socket.SOCK_STREAM)
-        
         self.server_socket = server_socket
-        host, port = 'localhost', 8000
-        self.host = host
-        self.port = port 
-        print('start')
+        try:
+            public_ip = r.get('https://checkip.amazonaws.com/').text.rstrip()
+        except r.exceptions.ConnectionError:
+            print('No internet connection!')
+
+        self.host = public_ip
+        self.port = 8000
+        print(f'Server start. Info: {self.host} {self.port}')
 
     def start(self) -> None:
-        
         try:
             self.server_socket.bind((self.host, self.port))
             self.server_socket.listen()
-            self.console.print('[green]You are ready to get message!')
+            print('[green]You are ready to get message!')
 
         except OSError as err:
             if err.errno == 98:
                 self.kill_port()
                 pass
 
-
-
         while True:
             try:
-
+                print('Wait conenction...')
                 conn, address = self.server_socket.accept()
                 self.conn = conn
                 self.address = address
-                # self.console.print(f'[yellow]Connected with[yellow] {address}')
+                print(f'Connected with {address}')
                 self.send_response()
 
             except KeyboardInterrupt:
@@ -63,24 +61,18 @@ class Server:
                 print('Bye!')
                 sys.exit()
 
-            # except Exception as e:
-            #     logger.exception(e)
-            #     sys.exit()
-
     def send_response(self) -> None:
 
         if self.key_is_valid():
             response = 'True'
             self.conn.send(response.encode())
-            self.console.print(
-                '[green]The token is correct, we are waiting for the message')
+            print('The token is correct, we are waiting for the message')
             self.get_message()
 
         else:
             response = 'False'
             self.conn.send(response.encode())
-            self.console.print(
-                "[red]The client entered an invalid session key or did not enter a key. Connection closed ")
+            print("The client entered an invalid session key or did not enter a key. Connection closed ")
             logger.info(f'{self.address}: {response}')
             self.conn.close()
 
@@ -89,7 +81,7 @@ class Server:
         self.message = message
         current_time = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
         self.current_time = current_time
-        self.console.print(
+        print(
             f"[{(self.address)}] [{self.current_time}]: " + str(self.message.split()[0]))
         self.add_in_history()
         logger.info(f'{self.address}: {message} {True}')
@@ -110,7 +102,7 @@ class Server:
                         pid = proc.info['pid']
                         process = psutil.Process(pid)
                         process.terminate()
-                        print('port was killed')
+                        print(f'Port {self.port}was killed')
         except TypeError:
             raise 'Sorry, but program cannot use it port. Kill an app that using port. Maybe it can be ncat'
 

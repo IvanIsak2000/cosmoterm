@@ -25,7 +25,7 @@ def get_targets():
         ...
     
     #  fake data are: 
-    return Target(id=0,name="jjodf", host='localhost', port=5008), Target(id=1,name="hjjhf", host='localhost', port=5008)
+    return Target(id=0, name="jjodf", host='localhost', port=5008), Target(id=1, name="hjjhf", host='localhost', port=5008), Target(id=2, name='I', host='localhost', port=8000)
 
 def remove_target():
     pass
